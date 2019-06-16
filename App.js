@@ -5,9 +5,9 @@ import { createStore } from 'redux';
 
 import HomeScreen from './src/components/HomeScreen';
 import SearchScreen from './src/components/SearchScreen';
-import searchReducer from './src/searchReducer';
+import rootReducer from './src/reducers/rootReducer';
 
-const store = createStore(searchReducer);
+const store = createStore(rootReducer);
 
 const AppNavigator = createStackNavigator({
   Home: HomeScreen,

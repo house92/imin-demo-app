@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import { View, TextInput, Picker, Button } from 'react-native';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { Formik } from 'formik';
 import axios from 'axios';
 import querystring from 'query-string';
 
 import { apiKey } from '../../secrets';
+import { updateSearchParams } from '../actions/searchActions';
+import { updateResults } from '../actions/resultsActions';
 
 // import { Container } from './styles';
 
@@ -285,10 +288,10 @@ class SearchScreen extends Component {
     });
     const query = querystring.stringify(decodedParams);
     const headers = { 'X-API-KEY': apiKey };
-    console.log(`https://search.imin.co/events-api/v2/event-series?${query}`);
     axios.get(`https://search.imin.co/events-api/v2/event-series?${query}`, { headers })
       .then(res => {
-        console.log(res);
+        updateSearchParams(decodedParams);
+        updateResults(res.data);
       })
       .catch(err => console.error(err));
   }
@@ -344,4 +347,11 @@ const mapStateToProps = (state) => {
   return search;
 }
 
-export default connect(mapStateToProps)(SearchScreen);
+const mapDispatchToProps = dispatch => (
+  bindActionCreators({
+    updateSearchParams,
+    updateResults,
+  }, dispatch)
+);
+
+export default connect(mapStateToProps, mapDispatchToProps)(SearchScreen);
