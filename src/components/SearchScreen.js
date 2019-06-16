@@ -1,32 +1,78 @@
+/* eslint-disable react/prop-types */
 import React, { Component } from 'react';
-import { View, TextInput, Picker, Button } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Picker, Button } from 'react-native';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Formik } from 'formik';
 import axios from 'axios';
 import querystring from 'query-string';
+import * as yup from 'yup';
 
 import { apiKey } from '../../secrets';
-import { updateSearchParams } from '../actions/searchActions';
+import { primaryColor } from '../styles';
+import {
+  updateSearchParams,
+  updateSearchLocation,
+  updateSearchRadius,
+} from '../actions/searchActions';
 import { updateResults } from '../actions/resultsActions';
-
-// import { Container } from './styles';
 
 const params = [
   {
-    name: 'geo[radial]',
-    type: 'number',
+    name: 'radius',
+    label: 'Radius (miles)',
+    tag: Picker,
+    options: [
+      {
+        label: '1',
+        value: 1,
+      },
+      {
+        label: '3',
+        value: 3,
+      },
+      {
+        label: '5',
+        value: 5,
+      },
+      {
+        label: '10',
+        value: 10,
+      },
+      {
+        label: '15',
+        value: 15,
+      },
+      {
+        label: '20',
+        value: 20,
+      },
+    ],
+    default: 5,
     required: true,
     basic: true,
   },
   {
     name: 'mode',
+    label: 'Sorting mode',
     tag: Picker,
     options: [
-      'upcoming-sessions',
-      'discovery-geo',
-      'discovery-geo-asc',
-      'discovery-geo-desc',
+      {
+        label: 'soonest first',
+        value: 'upcoming-sessions',
+      },
+      {
+        label: 'nearest first',
+        value: 'discovery-geo',
+      },
+      {
+        label: 'price (asc)',
+        value: 'discovery-price-asc',
+      },
+      {
+        label: 'price (desc)',
+        value: 'discovery-price-desc',
+      },
     ],
     default: 'upcoming-sessions',
     required: true,
@@ -73,22 +119,42 @@ const params = [
   },
   {
     name: 'genderRestriction',
+    label: 'Classes for',
     tag: Picker,
     options: [
-      'oa:NoRestriction',
-      'oa:MaleOnly',
-      'oa:FemaleOnly',
+      {
+        label: 'mixed',
+        value: 'oa:NoRestriction',
+      },
+      {
+        label: 'men',
+        value: 'oa:MaleOnly',
+      },
+      {
+        label: 'women',
+        value: 'oa:FemaleOnly',
+      },
     ],
     required: false,
     basic: true,
   },
   {
     name: 'levelType',
+    label: 'Level',
     tag: Picker,
     options: [
-      'imin:BeginnerLevel',
-      'imin:IntermediateLevel',
-      'imin:AdvancedLevel',
+      {
+        label: 'beginner',
+        value: 'imin:BeginnerLevel',
+      },
+      {
+        label: 'intermediate',
+        value: 'imin:IntermediateLevel',
+      },
+      {
+        label: 'advanced',
+        value: 'imin:AdvancedLevel',
+      },
     ],
     required: false,
     basic: true,
@@ -275,53 +341,113 @@ const params = [
   name: encodeURIComponent(param.name), // Encode param names for form
 }));
 
+// Used in Formik
+const formSchema = {
+  radius: yup.number().required(),
+  mode: yup.string().required(),
+  genderRestriction: yup.string(),
+  levelType: yup.string(), 
+};
+
 class SearchScreen extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+    this.state = {
+      formValues: {
+        ...this.props.formValues,
+      },
+    };
+    this.handlePickerValueChange = this.handlePickerValueChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
+  componentWillMount() {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.props.updateSearchLocation(position.coords);
+      },
+      error => this.setState({ error: error.message }),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+    );
+  }
+
   handleSubmit(values) {
+    // Get decoded params ready for query string
+    // TODO: figure out why values var isn't updating
+    const mergedValues = {
+      ...values,
+      ...this.state.formValues,
+    };
     const decodedParams = {};
-    Object.entries(values).map(([key, value]) => {
+    Object.entries(mergedValues).map(([key, value]) => {
       decodedParams[decodeURIComponent(key)] = value;
     });
+
+    // Construct geo[radial]
+    const { latitude, longitude } = this.props.location;
+    decodedParams['geo[radial]'] = `${latitude},${longitude},${decodedParams.radius}`;
+    delete decodedParams.radius;
+
     const query = querystring.stringify(decodedParams);
-    const headers = { 'X-API-KEY': apiKey };
+    const headers = {
+      'X-API-KEY': apiKey,
+      'X-OVERRIDE-IMAGE-KEY': 'classfinder',
+    };
+
     axios.get(`https://search.imin.co/events-api/v2/event-series?${query}`, { headers })
       .then(res => {
-        updateSearchParams(decodedParams);
-        updateResults(res.data);
+        this.props.updateSearchParams(decodedParams);
+        this.props.updateResults(res.data);
+        this.props.navigation.navigate('SearchResultList');
       })
       .catch(err => console.error(err));
   }
 
+  handlePickerValueChange(param, value) {
+    this.setState({
+      ...this.state,
+      formValues: {
+        ...this.state.formValues,
+        [param]: value,
+      },
+    });
+  }
+
   render() {
-    const formValues = {
-      ...this.props.formValues,
-    };
+    const { formValues } = this.state;
     // Set default values for dropdowns
     for (const param of params.filter(param => param.tag === Picker)) {
       formValues[param.name] = formValues[param.name] || param.default;
     }
+    console.log('formValues: ', formValues);
     const fields = props => {
       return params.filter(param => param.basic).map(param => {
         if (param.tag === Picker) {
-          const options = param.options.map(option => <Picker.Item value={option} label={option} key={option}/>);
+          const options = param.options.map(option => <Picker.Item value={option.value} label={option.label} key={option}/>);
           return (
-            <Picker
-              selectedValue={props.values[param.name]}
-            >
-              {options}
-            </Picker>
+            <View style={styles.field} key={param.name}>
+              <Text style={styles.label}>{param.label}</Text>
+              <Picker
+                selectedValue={formValues[param.name] || props.values[param.name]}
+                onValueChange={(value) => {
+                  this.handlePickerValueChange(param.name, value);
+                }}
+                style={styles.picker}
+              >
+                {options}
+              </Picker>
+            </View>
           );
         }
         return (
-          <TextInput
-            onChangeText={props.handleChange(param.name)}
-            onBlur={props.handleBlur(param.name)}
-            value={props.values[param.name]}
-          />
+          <View style={styles.field} key={param.name}>
+            <Text style={styles.label}>{param.label}</Text>
+            <TextInput
+              onChangeText={props.handleChange(param.name)}
+              onBlur={props.handleBlur(param.name)}
+              value={props.values[param.name]}
+            />
+          </View>
         );
       });
     };
@@ -330,17 +456,46 @@ class SearchScreen extends Component {
       <Formik
         initialValues={formValues}
         onSubmit={this.handleSubmit}
+        validationSchema={
+          yup.object().shape(formSchema)
+        }
       >
         {props => (
           <View>
             {fields(props)}
-            <Button onPress={props.handleSubmit} title="Search" />
+            <Button
+              onPress={props.handleSubmit}
+              title="Search"
+              color={primaryColor}
+            />
           </View>
         )}
       </Formik>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
+  },
+  field: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    minHeight: 50,
+  },
+  label: {
+    flex: 1,
+  },
+  picker: {
+    flex: 3,
+  },
+});
 
 const mapStateToProps = (state) => {
   const { search } = state;
@@ -350,6 +505,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
     updateSearchParams,
+    updateSearchLocation,
+    updateSearchRadius,
     updateResults,
   }, dispatch)
 );

@@ -112,15 +112,24 @@ describe('test/components/SearchResultTest.js', () => {
       ],
     };
 
+    const expectedMiles = (1.81 / 1.609344).toPrecision(2);
+
     const tree = renderer.create(<SearchResult result={TEST_SEARCH_RESULT} />).toJSON();
-    expect(tree.children.length).toBe(4);
+    expect(tree.children.length).toBe(2);
     expect(tree.children[0].type).toBe('Image');
     expect(tree.children[0].props.source.uri).toBe('https://images.weserv.nl?url=s3-eu-west-1.amazonaws.com/imin-default-images/classfinder/multi_fitness.jpg&h=150&w=150&t=square&a=attention&q=80');
-    expect(tree.children[1].type).toBe('Text');
-    expect(tree.children[1].children[0]).toBe('Yoga');
-    expect(tree.children[2].type).toBe('Text');
-    expect(tree.children[2].children[0]).toBe('Kensington Leisure Centre');
-    expect(tree.children[3].type).toBe('Text');
-    expect(tree.children[3].children[0]).toBe('13:00 16th Jun');
+    expect(tree.children[1].type).toBe('View');
+
+    expect(tree.children[1].children.length).toBe(3);
+    expect(tree.children[1].children[0].type).toBe('Text');
+    expect(tree.children[1].children[0].children[0]).toBe('Yoga');
+    expect(tree.children[1].children[1].type).toBe('Text');
+    expect(tree.children[1].children[1].children[0]).toBe('13:00 16th Jun');
+    expect(tree.children[1].children[2].type).toBe('View');
+
+    expect(tree.children[1].children[2].children.length).toBe(2);
+    expect(tree.children[1].children[2].children[0].type).toBe('Image');
+    expect(tree.children[1].children[2].children[1].type).toBe('Text');
+    expect(tree.children[1].children[2].children[1].children[0]).toBe(`${expectedMiles} miles`);
   });
 });

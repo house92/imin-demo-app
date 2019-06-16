@@ -1,9 +1,12 @@
-export default resultsReducer = (state = {}, action) => {
+import { UPDATE_RESULTS } from '../types';
+
+const resultsReducer = (state = {}, action) => {
     switch (action.type) {
-        case 'UPDATE_RESULTS':
-            state = action.payload;
-            break;
+        case UPDATE_RESULTS:
+            return action.payload;
         default:
             return state;
     }
 }
+
+export default resultsReducer;

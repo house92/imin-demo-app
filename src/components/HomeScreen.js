@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { StyleSheet, View, Image, Button } from 'react-native';
 import { connect } from 'react-redux';
 
+import { backgroundColor, primaryColor } from '../styles';
+
 class HomeScreen extends Component {
   render() {
       return (
@@ -12,6 +14,7 @@ class HomeScreen extends Component {
           <Button
             title="Start a search"
             onPress={() => this.props.navigation.navigate('Search')}
+            color={primaryColor}
           />
         </View>
       );
@@ -20,10 +23,10 @@ class HomeScreen extends Component {
 
 const styles = StyleSheet.create({
   container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    backgroundColor,
   },
 });
 

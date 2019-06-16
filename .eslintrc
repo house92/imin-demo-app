@@ -1,0 +1,22 @@
+{
+  "extends": [
+    "airbnb-base",
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "rules": {
+    "max-len": [1, 120, 4],
+    "no-console": 0,
+    "no-continue": 0,
+    "no-restricted-syntax": 0,
+    "no-await-in-loop": 0,
+    "no-return-await": 0,
+    "no-unused-expressions": "warn",
+    "function-paren-newline": 0,
+    "react/prop-types": 0
+  }
+}
