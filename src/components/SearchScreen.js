@@ -4,6 +4,7 @@ import { StyleSheet, View, Text, TextInput, Picker, Button } from 'react-native'
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Formik } from 'formik';
+import ModalSelector from 'react-native-modal-selector';
 import axios from 'axios';
 import querystring from 'query-string';
 import * as yup from 'yup';
@@ -21,31 +22,37 @@ const params = [
   {
     name: 'radius',
     label: 'Radius (miles)',
-    tag: Picker,
+    tag: 'selector',
     options: [
       {
         label: '1',
         value: 1,
+        key: 1,
       },
       {
         label: '3',
         value: 3,
+        key: 3,
       },
       {
         label: '5',
         value: 5,
+        key: 5,
       },
       {
         label: '10',
         value: 10,
+        key: 10,
       },
       {
         label: '15',
         value: 15,
+        key: 15,
       },
       {
         label: '20',
         value: 20,
+        key: 20,
       },
     ],
     default: 5,
@@ -55,23 +62,27 @@ const params = [
   {
     name: 'mode',
     label: 'Sorting mode',
-    tag: Picker,
+    tag: 'selector',
     options: [
       {
-        label: 'soonest first',
+        label: 'earliest',
         value: 'upcoming-sessions',
+        key: 'upcoming-sessions',
       },
       {
-        label: 'nearest first',
+        label: 'nearest',
         value: 'discovery-geo',
+        key: 'discovery-geo',
       },
       {
         label: 'price (asc)',
         value: 'discovery-price-asc',
+        key: 'discovery-price-asc',
       },
       {
         label: 'price (desc)',
         value: 'discovery-price-desc',
+        key: 'discovery-price-desc',
       },
     ],
     default: 'upcoming-sessions',
@@ -92,7 +103,7 @@ const params = [
   },
   {
     name: 'activityId',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -101,7 +112,7 @@ const params = [
   },
   {
     name: 'accessibilitySupportId',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -110,7 +121,7 @@ const params = [
   },
   {
     name: 'specialRequirementId',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -120,19 +131,22 @@ const params = [
   {
     name: 'genderRestriction',
     label: 'Classes for',
-    tag: Picker,
+    tag: 'selector',
     options: [
       {
         label: 'mixed',
         value: 'oa:NoRestriction',
+        key: 'oa:NoRestriction',
       },
       {
         label: 'men',
         value: 'oa:MaleOnly',
+        key: 'oa:MaleOnly',
       },
       {
         label: 'women',
         value: 'oa:FemaleOnly',
+        key: 'oa:FemaleOnly',
       },
     ],
     required: false,
@@ -141,19 +155,22 @@ const params = [
   {
     name: 'levelType',
     label: 'Level',
-    tag: Picker,
+    tag: 'selector',
     options: [
       {
         label: 'beginner',
         value: 'imin:BeginnerLevel',
+        key: 'imin:BeginnerLevel',
       },
       {
         label: 'intermediate',
         value: 'imin:IntermediateLevel',
+        key: 'imin:IntermediateLevel',
       },
       {
         label: 'advanced',
         value: 'imin:AdvancedLevel',
+        key: 'imin:AdvancedLevel',
       },
     ],
     required: false,
@@ -161,7 +178,7 @@ const params = [
   },
   {
     name: 'leaderGender',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -194,7 +211,7 @@ const params = [
   },
   {
     name: 'ageRange[includeRange]',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -203,7 +220,7 @@ const params = [
   },
   {
     name: 'ageRangeMax[lte]',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -212,7 +229,7 @@ const params = [
   },
   {
     name: 'ageRangeMin[gte]',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -221,7 +238,7 @@ const params = [
   },
   {
     name: 'dayOfWeek',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -230,7 +247,7 @@ const params = [
   },
   {
     name: 'priceAdult[gte]',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -239,7 +256,7 @@ const params = [
   },
   {
     name: 'priceAdult[lte]',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -248,7 +265,7 @@ const params = [
   },
   {
     name: 'activityConceptCollectionId',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -257,7 +274,7 @@ const params = [
   },
   {
     name: 'organizerId',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -266,7 +283,7 @@ const params = [
   },
   {
     name: 'organizerName[textSearch]',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -275,7 +292,7 @@ const params = [
   },
   {
     name: 'amenityFeatureType[valueTrue]',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -284,7 +301,7 @@ const params = [
   },
   {
     name: 'activityInScheme',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -293,7 +310,7 @@ const params = [
   },
   {
     name: 'membershipRequiredAdult',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -302,7 +319,7 @@ const params = [
   },
   {
     name: 'membershipRequiredJunior',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -311,7 +328,7 @@ const params = [
   },
   {
     name: 'isWheelchairAccessible',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -320,7 +337,7 @@ const params = [
   },
   {
     name: 'availableChannelAdult',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -329,7 +346,7 @@ const params = [
   },
   {
     name: 'availableChannelJunior',
-    tag: Picker,
+    tag: 'selector',
     options: [
 
     ],
@@ -416,26 +433,24 @@ class SearchScreen extends Component {
   render() {
     const { formValues } = this.state;
     // Set default values for dropdowns
-    for (const param of params.filter(param => param.tag === Picker)) {
+    for (const param of params.filter(param => param.tag === 'selector')) {
       formValues[param.name] = formValues[param.name] || param.default;
     }
-    console.log('formValues: ', formValues);
     const fields = props => {
       return params.filter(param => param.basic).map(param => {
-        if (param.tag === Picker) {
-          const options = param.options.map(option => <Picker.Item value={option.value} label={option.label} key={option}/>);
+        if (param.tag === 'selector') {
           return (
             <View style={styles.field} key={param.name}>
               <Text style={styles.label}>{param.label}</Text>
-              <Picker
-                selectedValue={formValues[param.name] || props.values[param.name]}
-                onValueChange={(value) => {
-                  this.handlePickerValueChange(param.name, value);
+              <ModalSelector
+                data={param.options}
+                initValue={'none'}
+                selectedKey={formValues[param.name] || param.default}
+                onChange={(option) => {
+                  this.handlePickerValueChange(param.name, option.value);
                 }}
-                style={styles.picker}
-              >
-                {options}
-              </Picker>
+                style={styles.selector}
+              />
             </View>
           );
         }
@@ -492,7 +507,7 @@ const styles = StyleSheet.create({
   label: {
     flex: 1,
   },
-  picker: {
+  selector: {
     flex: 3,
   },
 });

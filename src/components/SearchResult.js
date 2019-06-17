@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Image, Text } from 'react-native';
+import { Platform, StyleSheet, View, Image, Text } from 'react-native';
 import moment from 'moment';
 
 function formatDateTime(dateTime) {
@@ -74,11 +74,16 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '600',
-    fontFamily: 'Roboto',
+    ...Platform.select({
+      android: {
+        fontFamily: 'Roboto',
+      },
+    }),
   },
   location: {
     flex: 1,
     flexDirection: 'row',
+    alignItems: 'center',
     position: 'absolute',
     bottom: 0,
   },
