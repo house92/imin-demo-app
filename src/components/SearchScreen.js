@@ -9,7 +9,6 @@ import axios from 'axios';
 import querystring from 'query-string';
 import * as yup from 'yup';
 
-import { apiKey } from '../../secrets';
 import { primaryColor } from '../styles';
 import {
   updateSearchParams,
@@ -17,6 +16,7 @@ import {
   updateSearchRadius,
 } from '../actions/searchActions';
 import { updateResults } from '../actions/resultsActions';
+import sendIminApiGet from './utils/sendIminApiGet';
 
 const params = [
   {
@@ -358,6 +358,10 @@ const params = [
   name: encodeURIComponent(param.name), // Encode param names for form
 }));
 
+const CONSTANT_PARAMS = {
+  limit: 20,
+};
+
 // Used in Formik
 const formSchema = {
   radius: yup.number().required(),
@@ -378,7 +382,7 @@ class SearchScreen extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         this.props.updateSearchLocation(position.coords);
@@ -394,6 +398,7 @@ class SearchScreen extends Component {
     const mergedValues = {
       ...values,
       ...this.state.formValues,
+      ...CONSTANT_PARAMS,
     };
     const decodedParams = {};
     Object.entries(mergedValues).map(([key, value]) => {
@@ -406,12 +411,8 @@ class SearchScreen extends Component {
     delete decodedParams.radius;
 
     const query = querystring.stringify(decodedParams);
-    const headers = {
-      'X-API-KEY': apiKey,
-      'X-OVERRIDE-IMAGE-KEY': 'classfinder',
-    };
 
-    axios.get(`https://search.imin.co/events-api/v2/event-series?${query}`, { headers })
+    sendIminApiGet(`/events-api/v2/event-series?${query}`)
       .then(res => {
         this.props.updateSearchParams(decodedParams);
         this.props.updateResults(res.data);

@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, View, Image, Text } from 'react-native';
-import moment from 'moment';
+import { Platform, StyleSheet, TouchableWithoutFeedback, View, Image, Text } from 'react-native';
 
-function formatDateTime(dateTime) {
-  return moment(dateTime).format('HH:mm Do MMM');
-}
+import formatDateTime from './utils/formatDateTime';
+import sortLocations from './utils/sortLocations';
 
 function formatDistance(distance) {
   let distanceInMiles;
@@ -18,6 +16,15 @@ function formatDistance(distance) {
 }
 
 export default class SearchResult extends Component {
+  constructor(props) {
+    super(props);
+    this.handlePress = this.handlePress.bind(this);
+  }
+
+  handlePress(resultIdentifier) {
+    this.props.navigation.navigate('Result', { resultIdentifier });
+  }
+
   render() {
     const { result } = this.props;
 
@@ -31,23 +38,25 @@ export default class SearchResult extends Component {
 
     // If sorting by start date then only one result anyway, and if sorting by distance then get the nearest
     let time;
-    const location = result['imin:locationSummary'].sort((a, b) => a.geo['imin:distanceFromGeoQueryCenter'].value - b.geo['imin:distanceFromGeoQueryCenter'].value)[0];
+    const location = sortLocations(result['imin:locationSummary'])[0];
     const sessionSeries = result.subEvent.find(sessionSeries => sessionSeries.location.id === location.id);
     if (sessionSeries.subEvent && sessionSeries.subEvent.length > 0) {
       time = formatDateTime(sessionSeries.subEvent[0].startDate);
     }
     return (
-      <View style={styles.container}>
-        {image}
-        <View style={styles.details}>
-          <Text style={styles.title}>{result.name}</Text>
-          <Text>{time}</Text>
-          <View style={styles.location}>
-            <Image source={require('../../assets/pin.png')} />
-            <Text>{formatDistance(location.geo['imin:distanceFromGeoQueryCenter'])}</Text>
+      <TouchableWithoutFeedback onPress={() => this.handlePress(result.identifier)}>
+        <View style={styles.container}>
+          {image}
+          <View style={styles.details}>
+            <Text style={styles.title}>{result.name}</Text>
+            <Text>{time}</Text>
+            <View style={styles.location}>
+              <Image source={require('../../assets/pin.png')} />
+              <Text>{formatDistance(location.geo['imin:distanceFromGeoQueryCenter'])}</Text>
+            </View>
           </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     );
   }
 }

@@ -7,7 +7,6 @@ import { backgroundColor } from '../styles';
 
 class SearchResultListScreen extends Component {
   render() {
-    console.log(this.props.results);
     if (!this.props.results['imin:item']) {
       return (
         <Text>
@@ -16,7 +15,7 @@ class SearchResultListScreen extends Component {
       );
     }
     const results = this.props.results['imin:item'].map((eventSeries, i) => {
-      return <SearchResult result={eventSeries} key={`${eventSeries.identifier}#${i}`} />;
+      return <SearchResult result={eventSeries} navigation={this.props.navigation} key={`${eventSeries.identifier}#${i}`} />;
     });
     return (
       <ScrollView style={styles.container}>
